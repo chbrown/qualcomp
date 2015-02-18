@@ -1,0 +1,34 @@
+{
+  "name": "qualcomp",
+  "description": "Qualitative evaluation of compressed images",
+  "keywords" : ["evaluation", "image", "compression", "jpeg"],
+  "version": "0.1.0",
+  "homepage": "https://github.com/chbrown/qualcomp",
+  "repository": "git://github.com/chbrown/qualcomp.git",
+  "author": "Christopher Brown <io@henrian.com> (http://henrian.com)",
+  "license": "MIT",
+  "bin": {
+    "qualcomp": "bin/qualcomp"
+  },
+  "scripts": {
+    "start": "node bin/qualcomp"
+  },
+  "dependencies": {
+    "async": "*",
+    "formidable": "*",
+    "http-enhanced": "*",
+    "loge": "*",
+    "regex-router": "*",
+    "send": "*",
+    "yargs": "*"
+  },
+  "devDependencies": {
+    "mocha": "*"
+  },
+  "staticPattern": "static/lib/{file}",
+  "staticDependencies": {
+    "angular": "*",
+    "misc-js": "git://github.com/chbrown/misc-js.git",
+    "ng-storage": "*"
+  }
+}
