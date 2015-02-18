@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<head>
+  <meta charset="utf-8">
+  <title>QualComp</title>
+  <link rel="icon" href="/static/favicon.ico" type="image/x-icon">
+  <link href="/static/site.css" rel="stylesheet" type="text/css">
+  <script src="/static/lib.max.js"></script>
+  <script src="/ng/app.js"></script>
+</head>
+<body ng-app="app">
+  <flash></flash>
+  <nav fixedflow ng-controller="configCtrl">
+    <!-- <span><b>{{$storage.selected_filename}}</b></span> -->
+    <span>Variations:</span>
+    <span ng-repeat="variation in $storage.variations">
+      quality={{variation.quality}}
+    </span>
+  </nav>
+  <div ng-controller="uploadCtrl" style="float: left; width: 200px; border-right: 1px solid #555">
+    <div style="margin: 2ex 1em">
+      <input type="file" on-upload="uploadFile($file, $event)">
+    </div>
+    <ul style="font-size: 80%">
+      <li ng-repeat="upload in uploads"
+        ng-class="upload.filename == $storage.selected_filename ? 'selected' : 'unselected'"
+        ng-click="$storage.selected_filename = upload.filename">
+        <div class="overlay">
+          <span class="white">{{upload.filename}}</span>
+        </div>
+        <img ng-src="/images/{{upload.filename}}" style="width: 100%">
+      </li>
+    </ul>
+  </div>
+  <div ng-controller="previewCtrl" class="" style="">
+    <div ng-repeat="image in images">
+      <img ng-src="{{image.src}}" style="width: 100px">
+    </div>
+  </div>
+</body>
