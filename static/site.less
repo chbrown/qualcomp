@@ -1,0 +1,69 @@
+// --- general resets ---
+body {
+  margin: 0;
+}
+table {
+  border-spacing: 0;
+  border-collapse: collapse;
+  th, td {
+    font-size: 100%;
+    text-align: left;
+  }
+}
+// ----------------------
+
+body {
+  background-color: #FBFBFB;
+}
+
+nav {
+  left: 0;
+  right: 0;
+  // box-sizing must be border-box to get correct fixedflow-placeholder heights
+  box-sizing: border-box;
+
+  border-bottom: 1px solid #555;
+  padding: 2px;
+  background-color: #FBFBFB;
+
+  &[fixedflow] {
+    // for some reason elements with opacity < 1.0 float on top of fixed elements,
+    // but a non-zero z-index here fixes that
+    z-index: 100;
+  }
+}
+
+.flash {
+  position: fixed;
+  left: 0;
+  right: 0;
+
+  padding: 2px;
+  // height: 22px;
+  box-sizing: border-box;
+
+  z-index: 1000; // only needs to be greater than the nav's z-index
+  text-align: center;
+  color: white;
+  background-color: rgba(0, 0, 0, 66%);
+  pointer-events: none; // allows click through to elements underneath
+}
+
+ul {
+  padding: 0;
+  li {
+    list-style: none;
+  }
+}
+
+.overlay {
+  position: absolute;
+  .white {
+    background-color: rgba(0, 0, 0, 50%);
+    color: white
+  }
+}
+
+.unselected {
+  opacity: 0.25;
+}
