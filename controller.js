@@ -114,6 +114,68 @@ R.post(/^\/images$/, function(req, res, m) {
 
 });
 
+/** ensureOpenCache(original_filepath: string,
+                    cache_filepath: string,
+                    options: {
+                      quality: string,
+                      resize?: string,
+                    },
+                    callback: (error: Error, fd: number))
+
+Open a file descriptor for the specified variation of an uploaded image,
+executing the conversion to create the variation, if needed.
+
+Note the callback signature is the same as fs.open(...)
+*/
+function ensureOpenCache(original_filepath, cache_filepath, options, callback) {
+  // optimistically open the file at `cache_filepath`
+  fs.open(cache_filepath, 'r', function(err, fd) {
+    if (err) {
+      if (err.code == 'ENOENT') {
+        // ENOENT just means that the file doesn't already exist, which isn't fatal
+        logger.debug('fs.createReadStream error: %s', err);
+        cjpeg.convert(original_filepath, cache_filepath, options, function(err) {
+          if (err) return callback(err);
+          fs.open(cache_filepath, 'r', callback);
+        });
+      }
+      else {
+        // other errors ARE fatal
+        callback(err);
+      }
+    }
+    else {
+      callback(null, fd);
+    }
+  });
+}
+
+/** ensureOpenImage(original_filepath: string,
+                    cache_filepath: string,
+                    options: {
+                      quality: string,
+                      resize?: string,
+                    },
+                    callback: (error: Error, fd: number))
+
+Open a file descriptor for an uploaded image, if no variation is specified,
+or for the specified variation, using ensureOpenCache, executing the conversion
+to create the variation, if needed.
+
+Note the callback signature is the same as fs.open(...)
+*/
+function ensureOpenImage(original_filepath, cache_filepath, options, callback) {
+  if (options.quality || options.resize) {
+    ensureOpenCache(original_filepath, cache_filepath, options, callback);
+  }
+  else {
+    // if no variation arguments were specified, we just open the original file
+    //    i.e., no need for: fs.link(upload_filepath, cache_filepath, ...);
+    fs.open(original_filepath, 'r', callback);
+  }
+}
+
+
 /** GET /images/:filename.jpg
 
   ?quality: number
@@ -124,38 +186,55 @@ R.post(/^\/images$/, function(req, res, m) {
 */
 R.get(/^\/images\/([^?]+)(\?.+|$)/, function(req, res, m) {
   var urlObj = url.parse(req.url, true);
+  var options = urlObj.query;
 
-  var upload_filename = m[1];
-  var upload_filepath = path.join(__dirname, 'uploads', upload_filename);
-  var full_filename = m[1] + m[2];
-  var full_filepath = path.join(__dirname, 'cache', full_filename);
+  // TODO: fix the security issue here with accessing paths higher than
+  // __dirname/uploads by sticking `../` parent directories in m[1]
+  var upload_filepath = path.join(__dirname, 'uploads', m[1]);
+  var cache_filepath = path.join(__dirname, 'cache', m[1] + m[2]);
 
-  var stream = fs.createReadStream(full_filepath);
-  stream.pipe(res);
-  stream.on('error', function(err) {
-    logger.error('fs.createReadStream error:', err);
+  ensureOpenImage(upload_filepath, cache_filepath, urlObj.query, function(err, fd) {
+    if (err) return res.die('Could not prepare image: ' + cache_filepath);
+    // res.setHeader('Expires', );
+    // max-age is specified in seconds
+    fs.fstat(fd, function(err, stats) {
+      if (err) return res.die('Could not stat image: ' + cache_filepath);
 
-    if (urlObj.query.quality || urlObj.query.resize) {
-      // logger.info(`${input_filepath} -> ${output_filepath}`);
-      cjpeg.convert(upload_filepath, full_filepath, urlObj.query, function(err) {
-        if (err) return res.die('Error in cjpeg.convert:', err);
+      res.setHeader('Content-Length', stats.size);
+      res.setHeader('Cache-Control', 'max-age=60');
+      fs.createReadStream(null, {fd: fd}).pipe(res);
+    });
+  });
+});
 
-        // var input_stats = fs.statSync(input_filepath);
-        // var output_stats = fs.statSync(output_filepath);
+/** HEAD /images/:filename.jpg
 
-        // logger.info(`recompressed file is ${(100.0 * output_stats.size / input_stats.size).toFixed(2)}% the size of the original`);
-        var stream = fs.createReadStream(full_filepath);
-        stream.pipe(res);
-      });
+  ?quality: number
+    cjpeg encoder quality argument
+  &resize: string
+    ImageMagick convert resize argument
+
+*/
+R.head(/^\/images\/([^?]+)(\?.+|$)/, function(req, res, m) {
+  var urlObj = url.parse(req.url, true);
+  var options = urlObj.query;
+
+  // TODO: fix the security issue here with accessing paths higher than
+  //   __dirname/uploads by sticking `../` parent directories in m[1] and/or m[2]
+  var filepath = (options.quality || options.resize) ?
+    path.join(__dirname, 'cache', m[1] + m[2]) : path.join(__dirname, 'uploads', m[1]);
+
+  fs.stat(filepath, function(err, stats) {
+    if (err) {
+      res.statusCode = 404;
+      res.setHeader('X-Message', 'File not found "' + filepath + '"');
+      res.end();
     }
     else {
-      // just copy it as-is
-      fs.link(upload_filepath, full_filepath, function(err) {
-        if (err) return res.die('Error in fs.link:', err);
-
-        var stream = fs.createReadStream(full_filepath);
-        stream.pipe(res);
-      });
+      res.setHeader('X-Created', stats.ctime);
+      res.setHeader('Last-Modified', stats.mtime);
+      res.setHeader('Content-Length', stats.size);
+      res.end();
     }
   });
 });

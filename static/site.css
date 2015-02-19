@@ -4,9 +4,13 @@ table td,table th{font-size:100%;text-align:left}
 body{background-color:#FBFBFB}
 nav{left:0;right:0;box-sizing:border-box;border-bottom:1px solid #555;padding:2px;background-color:#FBFBFB}
 nav[fixedflow]{z-index:100}
-.flash{position:fixed;left:0;right:0;padding:2px;box-sizing:border-box;z-index:1000;text-align:center;color:#fff;background-color:rgba(0,0,0,.66);pointer-events:none}
+.flash{position:fixed;left:0;right:0;text-align:center;pointer-events:none}
+.flash span{display:inline-block;background-color:rgba(0,0,0,.66);color:#fff;padding:2px 8px;margin:3px 6px;border-radius:2px}
 ul{padding:0}
 ul li{list-style:none}
 .overlay{position:absolute}
-.overlay .white{background-color:rgba(0,0,0,.5);color:#fff}
+.overlay .white{background-color:rgba(0,0,0,.5);color:#fff;padding:1px 4px}
+.overlay .black{background-color:rgba(255,255,255,.5);color:#000;padding:1px 4px}
 .unselected{opacity:.25}
+.variation{max-width:200px;max-height:200px}
+.variation img{max-width:100%;max-height:100%}

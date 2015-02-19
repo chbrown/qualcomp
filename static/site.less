@@ -38,15 +38,17 @@ nav {
   left: 0;
   right: 0;
 
-  padding: 2px;
-  // height: 22px;
-  box-sizing: border-box;
-
-  z-index: 1000; // only needs to be greater than the nav's z-index
   text-align: center;
-  color: white;
-  background-color: rgba(0, 0, 0, 66%);
   pointer-events: none; // allows click through to elements underneath
+
+  span {
+    display: inline-block;
+    background-color: rgba(0, 0, 0, 66%);
+    color: white;
+    padding: 2px 8px;
+    margin: 3px 6px;
+    border-radius: 2px;
+  }
 }
 
 ul {
@@ -60,10 +62,24 @@ ul {
   position: absolute;
   .white {
     background-color: rgba(0, 0, 0, 50%);
-    color: white
+    color: white;
+    padding: 1px 4px;
+  }
+  .black {
+    background-color: rgba(255, 255, 255, 50%);
+    color: black;
+    padding: 1px 4px;
   }
 }
-
 .unselected {
   opacity: 0.25;
+}
+
+.variation {
+  max-width: 200px;
+  max-height: 200px;
+  img {
+    max-width: 100%;
+    max-height: 100%;
+  }
 }

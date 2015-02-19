@@ -9,7 +9,10 @@ var log = console.log.bind(console);
 function serializeQuerystring(query) {
   var pairs = [];
   for (var key in query) {
-    pairs.push(encodeURIComponent(key) + '=' + encodeURIComponent(query[key]));
+    var value = query[key];
+    if (key != '$$hashKey' && value) {
+      pairs.push(encodeURIComponent(key) + '=' + encodeURIComponent(value));
+    }
   }
   return (pairs.length > 0) ? ('?' + pairs.join('&')) : '';
 }
@@ -52,15 +55,52 @@ app.factory('uploadFile', function($q) {
   };
 });
 
-app.controller('configCtrl', function($scope, $http, $localStorage, $flash) {
-  $scope.$storage = $localStorage.$default({
-    variations: [
-      {quality: 80},
-      // {quality: 70},
-      {quality: 60},
-      // {quality: 50},
-    ]
-  });
+app.directive('variation', function($http) {
+  return {
+    restrict: 'A',
+    scope: {
+      variation: '=',
+      filename: '=',
+    },
+    templateUrl: '/ng/variation.html',
+    replace: true,
+    link: function(scope, el, attrs) {
+      //  title="quality: {{variation.quality}}; resize: {{variation.resize}}"
+      var src = '/images/' + scope.filename + serializeQuerystring(scope.variation);
+
+      var img = document.createElement('img');
+      img.addEventListener('error', function(err) {
+        log('img error', err);
+      });
+      // img.complete is a boolean that is false when fetching is currently in progress, and true when the src is missing or it has been completely loaded, but the load event seems to work just fine.
+      img.addEventListener('load', function() {
+        log('img[src=%s]:load', src);
+        // we must read the width and height before putting it on the page, where it may be restyled
+        // apparently img has .naturalWidth and .naturalHeight fields in some browsers,
+        //   but that's not universally supported
+        var original_width = img.width;
+        var original_height = img.height;
+        // now we can put the image into the DOM
+        el.append(img);
+        // and fill in the scope's variables
+        scope.$apply(function() {
+          scope.width = original_width;
+          scope.height = original_height;
+
+          // if the server sent along decent cache headers with the image, this
+          // HEAD will be pulled directly from the cache
+          $http.head(src).then(function(res) {
+            scope.size = res.headers('content-length');
+          }, function(err) {
+            log('image head error', err);
+          });
+        });
+      });
+      img.src = src;
+      // ${(100.0 * output_stats.size / input_stats.size).toFixed(2)}%
+      // logger.info(`recompressed file is ... the size of the original`);
+    }
+  };
 });
 
 app.controller('uploadCtrl', function($scope, $http, $localStorage, $flash, uploadFile) {
@@ -86,21 +126,24 @@ app.controller('uploadCtrl', function($scope, $http, $localStorage, $flash, uplo
 });
 
 app.controller('previewCtrl', function($scope, $http, $localStorage, $flash) {
-  $scope.$storage = $localStorage;
+  $scope.$storage = $localStorage.$default({
+    quality: 80,
+    resize: '',
+    viewport: {
+      x: 100,
+      y: 100,
+      width: 200,
+      height: 200,
+    },
+    variations: [
+      {quality: 80},
+      // {quality: 70},
+      {quality: 60},
+      // {quality: 50},
+    ]
+  });
 
-  function refresh() {
-    log('previewCtrl refreshing');
-    var uploaded_image = {
-      src: '/images/' + $scope.$storage.selected_filename,
-    };
-    var variation_images = $scope.$storage.variations.map(function(options) {
-      var query = angular.copy(options);
-      return {
-        src: uploaded_image.src + serializeQuerystring(query),
-      };
-    });
-    $scope.images = [uploaded_image].concat(variation_images);
-  }
-  $scope.$watch('$storage.variations', refresh);
-  $scope.$watch('$storage.selected_filename', refresh);
+  $scope.$on('delete', function(variation) {
+    $scope.$storage.variations.splice($scope.$storage.variations.indexOf(variation), 1);
+  });
 });

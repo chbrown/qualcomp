@@ -9,14 +9,7 @@
 </head>
 <body ng-app="app">
   <flash></flash>
-  <nav fixedflow ng-controller="configCtrl">
-    <!-- <span><b>{{$storage.selected_filename}}</b></span> -->
-    <span>Variations:</span>
-    <span ng-repeat="variation in $storage.variations">
-      quality={{variation.quality}}
-    </span>
-  </nav>
-  <div ng-controller="uploadCtrl" style="float: left; width: 200px; border-right: 1px solid #555">
+  <div ng-controller="uploadCtrl" style="position: fixed; left: 0; width: 200px; border-right: 1px solid #555">
     <div style="margin: 2ex 1em">
       <input type="file" on-upload="uploadFile($file, $event)">
     </div>
@@ -31,9 +24,38 @@
       </li>
     </ul>
   </div>
-  <div ng-controller="previewCtrl" class="" style="">
-    <div ng-repeat="image in images">
-      <img ng-src="{{image.src}}" style="width: 100px">
+  <div ng-controller="previewCtrl" style="margin-left: 210px">
+    <div ng-repeat="variation in $storage.variations"
+      variation="variation" filename="$storage.selected_filename"></div>
+
+    <form ng-submit="$storage.variations.push({quality: $storage.quality, resize: $storage.resize})">
+      <div>
+        <label><b>Quality</b>
+          <input type="number" min="0" max="100" ng-model="$storage.quality">
+        </label>
+      </div>
+      <div>
+        <label><b>Resize</b>
+          <input type="text" ng-model="$storage.resize">
+        </label>
+      </div>
+      <button>Add variation</button>
+    </form>
+
+    <div>
+      <h3>Viewport</h3>
+      <label><b>x</b>
+        <input type="number" ng-model="$storage.viewport.x">
+      </label>
+      <label><b>y</b>
+        <input type="number" ng-model="$storage.viewport.y">
+      </label>
+      <label><b>width</b>
+        <input type="number" ng-model="$storage.viewport.width">
+      </label>
+      <label><b>height</b>
+        <input type="number" ng-model="$storage.viewport.height">
+      </label>
     </div>
   </div>
 </body>
