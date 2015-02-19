@@ -47,17 +47,6 @@ function uploadFile(url, file, callback) {
   xhr.send(form);
 }
 
-app.factory('uploadFile', function($q) {
-  return function(url, file) {
-    return $q(function(resolve, reject) {
-      uploadFile(url, file, function(err, data) {
-        // split out typical async callback into reject/resolve calls:
-        return err ? reject(err) : resolve(data);
-      });
-    });
-  };
-});
-
 app.directive('img', function($parse) {
   return {
     restrict: 'E',
@@ -91,6 +80,17 @@ app.directive('img', function($parse) {
   };
 });
 
+app.factory('uploadFile', function($q) {
+  return function(url, file) {
+    return $q(function(resolve, reject) {
+      uploadFile(url, file, function(err, data) {
+        // split out typical async callback into reject/resolve calls:
+        return err ? reject(err) : resolve(data);
+      });
+    });
+  };
+});
+
 app.controller('variationCtrl', function($scope, $http, $localStorage, $flash) {
   $scope.$storage = $localStorage;
   $scope.load = function(img) {
@@ -107,7 +107,6 @@ app.controller('variationCtrl', function($scope, $http, $localStorage, $flash) {
   };
 });
 
-
 app.controller('viewportCtrl', function($scope, $http, $localStorage, $flash) {
   $scope.$storage = $localStorage;
   $scope.mouse = {down: false};
@@ -117,13 +116,13 @@ app.controller('viewportCtrl', function($scope, $http, $localStorage, $flash) {
     //   maybe just Chrome / Angular.js trying to be helpful?
     // ev.offsetX, ev.offsetY == 0, 0 in the top-left corner of the image
     if ($scope.mouse.down) {
-      $localStorage.viewport.x = (ev.offsetX * $scope.x_ratio) - $localStorage.viewport.width;
-      $localStorage.viewport.y = (ev.offsetY * $scope.y_ratio) - $localStorage.viewport.height;
+      $localStorage.viewport.x = (ev.offsetX * $scope.x_ratio) - ($localStorage.viewport.width / 2);
+      $localStorage.viewport.y = (ev.offsetY * $scope.y_ratio) - ($localStorage.viewport.height / 2);
     }
   };
 
   $scope.load = function(img) {
-    // not an actual img DOM element
+    // img is not an actual img DOM element
     $scope.x_ratio = img.naturalWidth / img.width;
     $scope.y_ratio = img.naturalHeight / img.height;
   };
@@ -161,12 +160,7 @@ app.controller('previewCtrl', function($scope, $http, $localStorage, $flash) {
       width: 200,
       height: 200,
     },
-    variations: [
-      {quality: 80},
-      // {quality: 70},
-      {quality: 60},
-      // {quality: 50},
-    ]
+    variations: [{}, {quality: 90}]
   });
 
   $http.head('/images/' + $scope.$storage.selected_filename).then(function(res) {
