@@ -23,7 +23,7 @@ if (argv.help) {
   yargs.showHelp();
 }
 else if (argv.version) {
-  console.log(require('./package').version);
+  console.log(require('../package').version);
 }
 else {
   var server = require('../server');
