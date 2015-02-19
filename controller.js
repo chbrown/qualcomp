@@ -196,11 +196,11 @@ R.get(/^\/images\/([^?]+)(\?.+|$)/, function(req, res, m) {
   ensureOpenImage(upload_filepath, cache_filepath, urlObj.query, function(err, fd) {
     if (err) return res.die('Could not prepare image: ' + cache_filepath);
     // res.setHeader('Expires', );
-    // max-age is specified in seconds
     fs.fstat(fd, function(err, stats) {
       if (err) return res.die('Could not stat image: ' + cache_filepath);
 
       res.setHeader('Content-Length', stats.size);
+      // max-age is specified in seconds
       res.setHeader('Cache-Control', 'max-age=60');
       fs.createReadStream(null, {fd: fd}).pipe(res);
     });

@@ -9,24 +9,64 @@
 </head>
 <body ng-app="app">
   <flash></flash>
-  <div ng-controller="uploadCtrl" style="position: fixed; left: 0; width: 200px; border-right: 1px solid #555">
-    <div style="margin: 2ex 1em">
-      <input type="file" on-upload="uploadFile($file, $event)">
-    </div>
-    <ul style="font-size: 80%">
-      <li ng-repeat="upload in uploads"
-        ng-class="upload.filename == $storage.selected_filename ? 'selected' : 'unselected'"
-        ng-click="$storage.selected_filename = upload.filename">
-        <div class="overlay">
-          <span class="white">{{upload.filename}}</span>
+
+  <div style="position: fixed; left: 0; width: 200px; border-right: 1px solid #555">
+    <div ng-controller="viewportCtrl">
+      <div ng-if="$storage.selected_filename">
+        <h3>Selection</h3>
+        <div style="position: relative">
+          <img ng-src="/images/{{$storage.selected_filename}}" style="width: 100%" draggable="false"
+            ng-load="load($img)"
+            ng-mousedown="mouse.down = true" ng-mouseleave="mouse.down = false" ng-mouseup="mouse.down = false"
+            ng-mousemove="mousemove($event)">
+          <div class="viewport-window"
+            ng-style="{
+              left: ($storage.viewport.x / x_ratio) + 'px',
+              top: ($storage.viewport.y / y_ratio) + 'px',
+              width: ($storage.viewport.width / x_ratio) + 'px',
+              height: ($storage.viewport.height / y_ratio) + 'px',
+            }"></div>
         </div>
-        <img ng-src="/images/{{upload.filename}}" style="width: 100%">
-      </li>
-    </ul>
+      </div>
+    </div>
+    <div ng-controller="uploadCtrl">
+      <h3>Uploads</h3>
+      <div style="margin: 2ex 1em">
+        <input type="file" on-upload="uploadFile($file, $event)">
+      </div>
+      <ul style="font-size: 80%">
+        <li ng-repeat="upload in uploads" ng-click="$storage.selected_filename = upload.filename">
+          <div style="position: absolute">
+            <span class="overlay-dark">{{upload.filename}}</span>
+          </div>
+          <img ng-src="/images/{{upload.filename}}" style="width: 100%">
+        </li>
+      </ul>
+    </div>
   </div>
+
   <div ng-controller="previewCtrl" style="margin-left: 210px">
-    <div ng-repeat="variation in $storage.variations"
-      variation="variation" filename="$storage.selected_filename"></div>
+    <div ng-repeat="variation in $storage.variations" ng-controller="variationCtrl" class="variation"
+      ng-style="{
+        width: $storage.viewport.width + 'px',
+        height: $storage.viewport.height + 'px',
+        'background-image': 'url(/images/' + $storage.selected_filename + (variation | serializeQuerystring) + ')',
+        'background-position': -$storage.viewport.x + 'px ' + -$storage.viewport.y + 'px',
+      }">
+      <img ng-src="/images/{{$storage.selected_filename}}{{variation | serializeQuerystring}}"
+        ng-load="load($img)" style="display: none">
+      <div style="position: absolute">
+        <span class="overlay-dark">{{width}}x{{height}}</span>
+        <span ng-if="variation.quality" class="overlay-dark">quality={{variation.quality}}</span>
+        <span ng-if="variation.resize" class="overlay-dark">resize={{variation.resize}}</span>
+      </div>
+      <div style="position: absolute; right: 0">
+        <button ng-click="deleteVariation(variation)">&times;</button>
+      </div>
+      <div style="position: absolute; bottom: 0">
+        <span class="overlay-light">{{100.0 * size / original_size | number:2}}% of original</span>
+      </div>
+    </div>
 
     <form ng-submit="$storage.variations.push({quality: $storage.quality, resize: $storage.resize})">
       <div>
@@ -44,12 +84,6 @@
 
     <div>
       <h3>Viewport</h3>
-      <label><b>x</b>
-        <input type="number" ng-model="$storage.viewport.x">
-      </label>
-      <label><b>y</b>
-        <input type="number" ng-model="$storage.viewport.y">
-      </label>
       <label><b>width</b>
         <input type="number" ng-model="$storage.viewport.width">
       </label>

@@ -16,6 +16,9 @@ function serializeQuerystring(query) {
   }
   return (pairs.length > 0) ? ('?' + pairs.join('&')) : '';
 }
+app.filter('serializeQuerystring', function() {
+  return serializeQuerystring;
+});
 
 function uploadFile(url, file, callback) {
   var xhr = new XMLHttpRequest();
@@ -55,51 +58,74 @@ app.factory('uploadFile', function($q) {
   };
 });
 
-app.directive('variation', function($http) {
+app.directive('img', function($parse) {
   return {
-    restrict: 'A',
-    scope: {
-      variation: '=',
-      filename: '=',
-    },
-    templateUrl: '/ng/variation.html',
-    replace: true,
-    link: function(scope, el, attrs) {
-      //  title="quality: {{variation.quality}}; resize: {{variation.resize}}"
-      var src = '/images/' + scope.filename + serializeQuerystring(scope.variation);
-
-      var img = document.createElement('img');
-      img.addEventListener('error', function(err) {
-        log('img error', err);
-      });
-      // img.complete is a boolean that is false when fetching is currently in progress, and true when the src is missing or it has been completely loaded, but the load event seems to work just fine.
-      img.addEventListener('load', function() {
-        log('img[src=%s]:load', src);
-        // we must read the width and height before putting it on the page, where it may be restyled
-        // apparently img has .naturalWidth and .naturalHeight fields in some browsers,
-        //   but that's not universally supported
-        var original_width = img.width;
-        var original_height = img.height;
-        // now we can put the image into the DOM
-        el.append(img);
-        // and fill in the scope's variables
-        scope.$apply(function() {
-          scope.width = original_width;
-          scope.height = original_height;
-
-          // if the server sent along decent cache headers with the image, this
-          // HEAD will be pulled directly from the cache
-          $http.head(src).then(function(res) {
-            scope.size = res.headers('content-length');
-          }, function(err) {
-            log('image head error', err);
+    restrict: 'E',
+    compile: function(el, attrs) {
+      var ngLoad = $parse(attrs.ngLoad);
+      var ngError = $parse(attrs.ngError);
+      return function(scope, element, attr) {
+        element.on('error', function(error) {
+          var context = {
+            $error: error.toString(),
+            $src: element.attr('src'),
+          };
+          scope.$apply(function() {
+            ngError(scope, context);
           });
         });
-      });
-      img.src = src;
-      // ${(100.0 * output_stats.size / input_stats.size).toFixed(2)}%
-      // logger.info(`recompressed file is ... the size of the original`);
+        element.on('load', function(event) {
+          var img = {
+            width: event.target.width,
+            height: event.target.height,
+            naturalWidth: event.target.naturalWidth,
+            naturalHeight: event.target.naturalHeight,
+            src: event.target.src,
+          };
+          scope.$apply(function() {
+            ngLoad(scope, {$img: img});
+          });
+        });
+      };
     }
+  };
+});
+
+app.controller('variationCtrl', function($scope, $http, $localStorage, $flash) {
+  $scope.$storage = $localStorage;
+  $scope.load = function(img) {
+    // not an actual img DOM element
+    $scope.width = img.naturalWidth;
+    $scope.height = img.naturalHeight;
+    // if the server sent along decent cache headers with the image, this
+    // HEAD will be pulled directly from the cache
+    $http.head(img.src).then(function(res) {
+      $scope.size = res.headers('content-length');
+    }, function(err) {
+      $flash('image head error ' + err.toString());
+    });
+  };
+});
+
+
+app.controller('viewportCtrl', function($scope, $http, $localStorage, $flash) {
+  $scope.$storage = $localStorage;
+  $scope.mouse = {down: false};
+
+  $scope.mousemove = function(ev) {
+    // ev.offsetX and ev.offsetY are what we want, but it seems they are non-standard?
+    //   maybe just Chrome / Angular.js trying to be helpful?
+    // ev.offsetX, ev.offsetY == 0, 0 in the top-left corner of the image
+    if ($scope.mouse.down) {
+      $localStorage.viewport.x = (ev.offsetX * $scope.x_ratio) - $localStorage.viewport.width;
+      $localStorage.viewport.y = (ev.offsetY * $scope.y_ratio) - $localStorage.viewport.height;
+    }
+  };
+
+  $scope.load = function(img) {
+    // not an actual img DOM element
+    $scope.x_ratio = img.naturalWidth / img.width;
+    $scope.y_ratio = img.naturalHeight / img.height;
   };
 });
 
@@ -143,7 +169,13 @@ app.controller('previewCtrl', function($scope, $http, $localStorage, $flash) {
     ]
   });
 
-  $scope.$on('delete', function(variation) {
-    $scope.$storage.variations.splice($scope.$storage.variations.indexOf(variation), 1);
+  $http.head('/images/' + $scope.$storage.selected_filename).then(function(res) {
+    $scope.original_size = res.headers('content-length');
+  }, function(err) {
+    $flash('image head error ' + err.toString());
   });
+
+  $scope.deleteVariation = function(variation) {
+    $scope.$storage.variations.splice($scope.$storage.variations.indexOf(variation), 1);
+  };
 });

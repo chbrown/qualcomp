@@ -16,23 +16,6 @@ body {
   background-color: #FBFBFB;
 }
 
-nav {
-  left: 0;
-  right: 0;
-  // box-sizing must be border-box to get correct fixedflow-placeholder heights
-  box-sizing: border-box;
-
-  border-bottom: 1px solid #555;
-  padding: 2px;
-  background-color: #FBFBFB;
-
-  &[fixedflow] {
-    // for some reason elements with opacity < 1.0 float on top of fixed elements,
-    // but a non-zero z-index here fixes that
-    z-index: 100;
-  }
-}
-
 .flash {
   position: fixed;
   left: 0;
@@ -51,6 +34,11 @@ nav {
   }
 }
 
+h3 {
+  margin: 1ex 0;
+  padding: 0 1em;
+}
+
 ul {
   padding: 0;
   li {
@@ -58,28 +46,43 @@ ul {
   }
 }
 
-.overlay {
-  position: absolute;
-  .white {
-    background-color: rgba(0, 0, 0, 50%);
-    color: white;
-    padding: 1px 4px;
-  }
-  .black {
-    background-color: rgba(255, 255, 255, 50%);
-    color: black;
-    padding: 1px 4px;
-  }
+.overlay-dark {
+  background-color: rgba(0, 0, 0, 50%);
+  color: white;
+  padding: 1px 4px;
 }
-.unselected {
-  opacity: 0.25;
+.overlay-light {
+  background-color: rgba(255, 255, 255, 50%);
+  color: black;
+  padding: 1px 4px;
 }
 
 .variation {
-  max-width: 200px;
-  max-height: 200px;
+  position: relative;
+  display: inline-block;
+  margin: 0 8px 2px 0;
+
+  // image display:
+  background-color: #DDD;
+  background-repeat: no-repeat; // repeat is the default, but this isn't a pattern
+
+  // background-attachment is only useful if we want an image that doesn't scroll with the rest of the container (annoying)
+  // background-attachment: scroll; // scroll is the default
+
+  // background-clip and background-origin have no effect when the container has no padding or border
+  // background-clip: border-box; // border-box is the default
+  // background-origin: padding-box; // padding-box is the default
+
+  // background-size ?
   img {
     max-width: 100%;
     max-height: 100%;
   }
+}
+
+.viewport-window {
+  position: absolute;
+  background-color: rgba(255, 255, 255, 50%);
+  border: 1px solid black;
+  pointer-events: none;
 }
