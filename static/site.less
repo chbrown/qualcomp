@@ -23,6 +23,8 @@ body {
   text-align: center;
   pointer-events: none; // allows click through to elements underneath
 
+  z-index: 100;
+
   span {
     display: inline-block;
     background-color: rgba(0, 0, 0, 66%);
@@ -63,6 +65,10 @@ nav {
   bottom: 0;
   overflow-x: hidden;
   overflow-y: scroll;
+
+  img {
+    width: 100%;
+  }
 }
 
 .variation {
@@ -85,9 +91,7 @@ nav {
   // background-size ?
 }
 
-.viewport-window {
-  position: absolute;
+.draggable-frame {
   background-color: rgba(255, 255, 255, 50%);
   border: 1px solid black;
-  pointer-events: none;
 }

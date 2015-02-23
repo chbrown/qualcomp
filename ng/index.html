@@ -11,46 +11,22 @@
   <flash></flash>
 
   <nav style="width: 200px">
-    <div ng-controller="viewportCtrl">
-      <div ng-if="$storage.selected_filename">
-        <h3>Selection</h3>
-        <div style="position: relative">
-          <img ng-src="/images/{{$storage.selected_filename}}" style="width: 100%" draggable="false"
-            ng-load="load($img)"
-            ng-mousedown="mouse.down = true; mousemove($event)" ng-mousemove="mousemove($event)"
-            ng-mouseleave="mouse.down = false" ng-mouseup="mouse.down = false">
-          <div class="viewport-window"
-            ng-style="{
-              left: ($storage.viewport.x / x_ratio) + 'px',
-              top: ($storage.viewport.y / y_ratio) + 'px',
-              width: ($storage.viewport.width / x_ratio) + 'px',
-              height: ($storage.viewport.height / y_ratio) + 'px',
-            }"></div>
-        </div>
-      </div>
-      <div>
-        <h3>Viewport</h3>
-        <label><b>width</b>
-          <input type="number" min="10" ng-model="$storage.viewport.width">
-        </label>
-        <label><b>height</b>
-          <input type="number" min="10" ng-model="$storage.viewport.height">
-        </label>
-      </div>
-    </div>
     <div ng-controller="uploadCtrl">
       <h3>Uploads</h3>
       <div style="margin: 2ex 1em">
         <input type="file" on-upload="uploadFile($file, $event)">
       </div>
-      <ul style="font-size: 80%">
-        <li ng-repeat="upload in uploads" ng-click="$storage.selected_filename = upload.filename">
-          <div style="position: absolute">
-            <span class="overlay-dark">{{upload.filename}}</span>
-          </div>
-          <img ng-src="/images/{{upload.filename}}" style="width: 100%">
-        </li>
-      </ul>
+
+      <div style="position: relative" ng-controller="viewportCtrl">
+        <ul style="font-size: 80%">
+          <li ng-repeat="upload in uploads">
+            <div class="overlay-dark" style="position: absolute; pointer-events: none;">
+              {{upload.filename}}
+            </div>
+            <img ng-src="/images/{{upload.filename}}" draggable="false">
+          </li>
+        </ul>
+      </div>
     </div>
   </nav>
 
