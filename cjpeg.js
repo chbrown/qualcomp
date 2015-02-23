@@ -2,12 +2,12 @@ import {exec} from 'child_process';
 var logger = require('loge');
 
 /** convert(input_filepath: string,
-                  output_filepath: string,
-                  options: {
-                    quality: number | string,
-                    resize?: string,
-                  },
-                  callback: (error: Error))
+            output_filepath: string,
+            options: {
+              quality: number | string,
+              resize?: string,
+            },
+            callback: (error: Error))
 
 Read image at input_filepath and write compressed JPEG to output_filepath.
 */
