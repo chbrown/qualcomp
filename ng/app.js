@@ -235,6 +235,19 @@ function attachDraggableFrame(container, onUpdate) {
     mousedown_point = null;
   });
 
+  // container.addEventListener('dragstart', function(ev) {
+  //   log('dragstart', ev);
+  // });
+  // container.addEventListener('drag', function(ev) {
+  //   log('drag', ev);
+  // });
+  // container.addEventListener('drop', function(ev) {
+  //   log('drop', ev);
+  // });
+  // container.addEventListener('dragend', function(ev) {
+  //   log('dragend', ev);
+  // });
+
 }
 
 app.controller('viewportCtrl', function($scope, $element, $localStorage) {

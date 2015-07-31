@@ -7,11 +7,12 @@
   "repository": "git://github.com/chbrown/qualcomp.git",
   "author": "Christopher Brown <io@henrian.com> (http://henrian.com)",
   "license": "MIT",
+  "private": true,
   "bin": {
     "qualcomp": "bin/qualcomp"
   },
   "scripts": {
-    "start": "node bin/qualcomp"
+    "start": "babel-node bin/qualcomp"
   },
   "dependencies": {
     "async": "*",
