@@ -2,10 +2,9 @@
 <head>
   <meta charset="utf-8">
   <title>QualComp</title>
-  <link rel="icon" href="/static/favicon.ico" type="image/x-icon">
-  <link href="/static/site.css" rel="stylesheet" type="text/css">
-  <script src="/static/lib.max.js"></script>
-  <script src="/ng/app.js"></script>
+  <link rel="icon" href="/ui/favicon.ico" type="image/x-icon">
+  <link href="/ui/site.css" rel="stylesheet" type="text/css">
+  <script src="/ui/bundle.min.js"></script>
 </head>
 <body ng-app="app">
   <flash></flash>
@@ -14,7 +13,7 @@
     <div ng-controller="uploadCtrl">
       <h3>Uploads</h3>
       <div style="margin: 2ex 1em">
-        <input type="file" on-upload="uploadFile($file, $event)">
+        <input type="file" ng-upload="uploadFile($file, $event)">
       </div>
 
       <div style="position: relative" ng-controller="viewportCtrl">

@@ -16,25 +16,6 @@ body {
   background-color: #FBFBFB;
 }
 
-.flash {
-  position: fixed;
-  left: 0;
-  right: 0;
-  text-align: center;
-  pointer-events: none; // allows click through to elements underneath
-
-  z-index: 100;
-
-  span {
-    display: inline-block;
-    background-color: rgba(0, 0, 0, 66%);
-    color: white;
-    padding: 2px 8px;
-    margin: 3px 6px;
-    border-radius: 2px;
-  }
-}
-
 h3 {
   margin: 1ex 0;
   padding: 0 1em;
@@ -94,4 +75,28 @@ nav {
 .draggable-frame {
   background-color: rgba(255, 255, 255, 50%);
   border: 1px solid black;
+}
+
+.notification-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+
+  vertical-align: middle;
+  text-align: center;
+  padding: 10px;
+  pointer-events: none;
+}
+.notification {
+  display: inline-block;
+  vertical-align: middle;
+  background-color: rgba(0, 0, 0, .66);
+  border: 1px solid rgba(0, 0, 0, .90);
+  color: #DDD;
+  border-radius: 2px;
+  padding: 5px;
+  margin: 5px;
+  pointer-events: auto;
 }

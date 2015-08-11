@@ -1,10 +1,15 @@
-/*jslint browser: true */ /*globals angular */
+/*jslint browser: true */
+var angular = require('angular');
+var Request = require('httprequest').Request;
+var NotifyUI = require('notify-ui').NotifyUI;
+
+require('ng-upload');
+require('ngstorage');
+
 var app = angular.module('app', [
   'ngStorage',
-  'misc-js/angular-plugins',
+  'ngUpload',
 ]);
-
-var log = console.log.bind(console);
 
 function serializeQuerystring(query) {
   var pairs = [];
@@ -20,40 +25,13 @@ app.filter('serializeQuerystring', function() {
   return serializeQuerystring;
 });
 
-function uploadFile(url, file, callback) {
-  var xhr = new XMLHttpRequest();
-  xhr.open('POST', url);
-  xhr.onerror = function(error) {
-    callback(error);
-  };
-  xhr.onload = function(event) {
-    if (xhr.status >= 300) {
-      var error = new Error(xhr.responseText);
-      return callback(error);
-    }
-
-    var body = xhr.responseText;
-    var content_type = xhr.getResponseHeader('content-type');
-    if (content_type.match(/application\/json/)) {
-      // unescape angular.js anti-XSS-prefix, if needed
-      body = body.replace(/^\)\]\}',/, '');
-      body = JSON.parse(body);
-    }
-    callback(null, body);
-  };
-
-  var form = new FormData();
-  form.append('file', file, file.name);
-  xhr.send(form);
-}
-
 app.directive('img', function($parse) {
   return {
     restrict: 'E',
     compile: function(el, attrs) {
       var ngLoad = $parse(attrs.ngLoad);
       var ngError = $parse(attrs.ngError);
-      return function(scope, element, attr) {
+      return function(scope, element) {
         element.on('error', function(error) {
           var context = {
             $error: error.toString(),
@@ -80,10 +58,13 @@ app.directive('img', function($parse) {
   };
 });
 
-app.factory('uploadFile', function($q) {
+app.factory('$uploadFile', function($q) {
   return function(url, file) {
     return $q(function(resolve, reject) {
-      uploadFile(url, file, function(err, data) {
+      var request = new Request('POST', url);
+      var form = new FormData();
+      form.append('file', file, file.name);
+      request.sendData(form, function(err, data) {
         // split out typical async callback into reject/resolve calls:
         return err ? reject(err) : resolve(data);
       });
@@ -91,7 +72,7 @@ app.factory('uploadFile', function($q) {
   };
 });
 
-app.controller('uploadCtrl', function($scope, $http, $localStorage, $flash, uploadFile) {
+app.controller('uploadCtrl', function($scope, $http, $localStorage, $uploadFile) {
   $scope.$storage = $localStorage;
 
   var promise = $http.get('/images').then(function(res) {
@@ -100,16 +81,16 @@ app.controller('uploadCtrl', function($scope, $http, $localStorage, $flash, uplo
   }, function(err) {
     return err.toString();
   });
-  $flash(promise);
+  NotifyUI.addPromise(promise);
 
-  $scope.uploadFile = function(file, ev) {
-    var promise = uploadFile('/images', file).then(function(res) {
+  $scope.uploadFile = function(file) {
+    var promise = $uploadFile('/images', file).then(function(res) {
       Array.prototype.push.apply($scope.uploads, res);
       return 'Uploaded ' + res.length + ' file(s)';
     }, function(err) {
       return 'Upload error: ' + err.toString();
     });
-    $flash(promise);
+    NotifyUI.addPromise(promise);
   };
 });
 
@@ -228,7 +209,7 @@ function attachDraggableFrame(container, onUpdate) {
       onUpdate(frame_rectangle);
     }
   });
-  container.addEventListener('mouseup', function(ev) {
+  container.addEventListener('mouseup', function() {
     frame.style['pointer-events'] = 'auto';
     frame.draggable = true;
 
@@ -296,7 +277,7 @@ app.controller('viewportCtrl', function($scope, $element, $localStorage) {
 
 });
 
-app.controller('variationCtrl', function($scope, $http, $localStorage, $flash) {
+app.controller('variationCtrl', function($scope, $http, $localStorage) {
   $scope.$storage = $localStorage;
   $scope.load = function(img) {
     // not an actual img DOM element
@@ -307,12 +288,12 @@ app.controller('variationCtrl', function($scope, $http, $localStorage, $flash) {
     $http.head(img.src).then(function(res) {
       $scope.size = res.headers('content-length');
     }, function(err) {
-      $flash('image head error ' + err.toString());
+      NotifyUI.add('image head error ' + err.toString());
     });
   };
 });
 
-app.controller('previewCtrl', function($scope, $http, $localStorage, $flash) {
+app.controller('previewCtrl', function($scope, $http, $localStorage) {
   $scope.$storage = $localStorage.$default({
     quality: 80,
     resize: '',
@@ -328,7 +309,7 @@ app.controller('previewCtrl', function($scope, $http, $localStorage, $flash) {
   $http.head('/images/' + $scope.$storage.selected_filename).then(function(res) {
     $scope.original_size = res.headers('content-length');
   }, function(err) {
-    $flash('image head error ' + err.toString());
+    NotifyUI.add('image head error ' + err.toString());
   });
 
   $scope.deleteVariation = function(variation) {
