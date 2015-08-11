@@ -12,7 +12,7 @@
     "qualcomp": "bin/qualcomp"
   },
   "scripts": {
-    "start": "babel-node bin/qualcomp"
+    "start": "node bin/qualcomp"
   },
   "dependencies": {
     "async": "*",
@@ -24,12 +24,15 @@
     "yargs": "*"
   },
   "devDependencies": {
-    "mocha": "*"
-  },
-  "staticPattern": "static/lib/{file}",
-  "staticDependencies": {
     "angular": "*",
-    "misc-js": "git://github.com/chbrown/misc-js.git",
-    "ng-storage": "*"
+    "clean-css": "*",
+    "httprequest": "*",
+    "less": "*",
+    "ng-annotate-webpack-plugin": "*",
+    "ng-upload": "*",
+    "ngstorage": "*",
+    "notify-ui": "*",
+    "watsh": "*",
+    "webpack": "*"
   }
 }

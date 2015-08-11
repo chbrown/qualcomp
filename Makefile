@@ -1,14 +1,25 @@
-all: static/lib.min.js static/lib.max.js static/site.css
+BIN := node_modules/.bin
+DTS := node/node angularjs/angular jquery/jquery async/async
 
-%.css: %.less
-	lessc $+ | cleancss --keep-line-breaks --skip-advanced -o $@
+all: ui/bundle.js ui/bundle.min.js ui/site.css
 
-# Use | to skip existing files
-static/lib/%.min.js: | static/lib/%.js
-	ng-annotate -a $| | closure-compiler --language_in ECMASCRIPT5 --warning_level QUIET > $@
+type_declarations: $(DTS:%=type_declarations/DefinitelyTyped/%.d.ts)
+type_declarations/DefinitelyTyped/%:
+	mkdir -p $(@D)
+	curl -s https://raw.githubusercontent.com/borisyankov/DefinitelyTyped/master/$* > $@
 
-SCRIPTS = angular ngStorage angular-plugins
-static/lib.min.js: $(SCRIPTS:%=static/lib/%.min.js)
-	closure-compiler --language_in ECMASCRIPT5 --warning_level QUIET --js $+ > $@
-static/lib.max.js: $(SCRIPTS:%=static/lib/%.js)
-	cat $+ > $@
+$(BIN)/%:
+	npm install
+
+%.css: %.less $(BIN)/lessc $(BIN)/cleancss
+	$(BIN)/lessc $< | $(BIN)/cleancss --keep-line-breaks --skip-advanced -o $@
+
+%.min.js: %.js
+	closure-compiler --angular_pass --language_in ECMASCRIPT5 --warning_level QUIET $< >$@
+
+ui/bundle.js: ui/app.js $(BIN)/webpack
+	mkdir -p $(@D)
+	$(BIN)/webpack $< $@
+
+dev: $(BIN)/watsh
+	$(BIN)/watsh 'make ui/site.css' ui/site.less
