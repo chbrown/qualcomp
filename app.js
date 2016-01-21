@@ -1,7 +1,8 @@
-/*jslint browser: true */
 var angular = require('angular');
 var Request = require('httprequest').Request;
 var NotifyUI = require('notify-ui').NotifyUI;
+
+import './site.less';
 
 require('ng-upload');
 require('ngstorage');
@@ -54,7 +55,7 @@ app.directive('img', function($parse) {
           });
         });
       };
-    }
+    },
   };
 });
 
@@ -303,7 +304,7 @@ app.controller('previewCtrl', function($scope, $http, $localStorage) {
       width: 200,
       height: 200,
     },
-    variations: [{}, {quality: 90}]
+    variations: [{}, {quality: 90}],
   });
 
   $http.head('/images/' + $scope.$storage.selected_filename).then(function(res) {

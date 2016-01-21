@@ -4,35 +4,45 @@
   "keywords" : ["evaluation", "image", "compression", "jpeg"],
   "version": "0.1.0",
   "homepage": "https://github.com/chbrown/qualcomp",
-  "repository": "git://github.com/chbrown/qualcomp.git",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/chbrown/qualcomp.git"
+  },
   "author": "Christopher Brown <io@henrian.com> (http://henrian.com)",
   "license": "MIT",
   "private": true,
-  "bin": {
-    "qualcomp": "bin/qualcomp"
-  },
-  "scripts": {
-    "start": "node bin/qualcomp"
-  },
   "dependencies": {
     "async": "*",
     "formidable": "*",
     "http-enhanced": "*",
+    "httprequest": "*",
     "loge": "*",
+    "ng-upload": "*",
+    "ngstorage": "*",
+    "notify-ui": "*",
     "regex-router": "*",
     "send": "*",
+    "tarry": "*",
     "yargs": "*"
   },
   "devDependencies": {
     "angular": "*",
-    "clean-css": "*",
-    "httprequest": "*",
+    "babel-core": "^5.0.0",
+    "babel-loader": "^5.0.0",
+    "css-loader": "*",
+    "declarations": "*",
     "less": "*",
+    "less-loader": "*",
     "ng-annotate-webpack-plugin": "*",
-    "ng-upload": "*",
-    "ngstorage": "*",
-    "notify-ui": "*",
-    "watsh": "*",
+    "style-loader": "*",
+    "ts-loader": "*",
+    "typescript": "*",
     "webpack": "*"
+  },
+  "bin": {
+    "qualcomp": "bin/qualcomp.js"
+  },
+  "scripts": {
+    "start": "node bin/qualcomp.js"
   }
 }
